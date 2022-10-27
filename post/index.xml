@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on My New Hugo Site</title>
+    <link>https://chen-dy.github.io.git/post/</link>
+    <description>Recent content in Posts on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 27 Oct 2022 16:44:40 +0800</lastBuildDate><atom:link href="https://chen-dy.github.io.git/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>BufferMnanager</title>
+      <link>https://chen-dy.github.io.git/post/blog/</link>
+      <pubDate>Thu, 27 Oct 2022 16:44:40 +0800</pubDate>
+      
+      <guid>https://chen-dy.github.io.git/post/blog/</guid>
+      <description>这个项目的目的是实现一个缓存池，缓冲池负责将物理页面从主内存来回移动到磁盘。它允许 DBMS 的内存大于系统可用内存量的。 项目要求实现三个部分：
+LRU Replacement Policy Buffer Pool Manager Instance Parallel Buffer Pool Manager Task #1 - LRU REPLACEMENT POLICY 实验一要求实现一个LRU替换策略。LRU和buffer pool管理的页数相同，其中LRU管理的是页框号(frame_id)，buffer pool中管理的是页(page_id)。 LRU替换策略需要满足的条件：
+显然 LRU中的元素必须有时序，以区分最近使用的和久未使用的数据，当容量满了之后要删除最久未使用的那个元素腾位置。 要在LRU中快速找到某一页。 在访问LRU中的某个页时，需要将这个页变为最近使用的，所以LRU要支持任意位置的插入和删除。 实验主要要求实现四个函数：
+Victim(frame_id_t *)：从LRU中删除一个最近最久没有使用的页，并将其frame_id传入参数。 Pin(frame_id_t)：当有其他线程要使用这个frame时，需要使用Pin这个动作将这个frame从LRU管理的frame中删除，防止frame在使用过程中被置换出去。 Unpin(frame_id_t) ：当这个frame不在被线程使用了，所以我们将这个frame加入LRU中。表示这个frame此时可以被置换出去。 Size() ：返回LRU中页面的数目。 具体实现： 几个成员：
+list&amp;lt;frame_id_t&amp;gt; frame_; // 表示LRU中存放的所有页框号 unordered_map&amp;lt;frame_id_t, std::list&amp;lt;frame_id_t&amp;gt;::iterator&amp;gt; frame_map_; mutex mux_ bool Victim(frame_id_t*) 如果frame_链表为空，则表示LRU中没有可替换的页框，直接返回false 如果frame_链表不为空，则在链表中删除最近最久未使用的（即第一个或者最后一个，具体看设计），同时解除hush映射。 bool LRUReplacer::Victim(frame_id_t *frame_id) { const std::lock_guard&amp;lt;std::mutex&amp;gt; lock_guard(mux_); if (frame_.empty()) { return false; } *frame_id = frame_.front(); frame_.pop_front(); frame_map_.erase(*frame_id); return true; } void Pin(frame_id_t frame_id) 如果在frame_map_中找不到页框，return 如果能找到，则在frame_和frame_map_中删除页框 void LRUReplacer::Pin(frame_id_t frame_id) { std::lock_guard&amp;lt;std::mutex&amp;gt; lock_guard(mux_); if (frame_map_.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chen-dy.github.io.git/post/1111/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chen-dy.github.io.git/post/1111/</guid>
+      <description>这个项目的目的是实现一个缓存池，缓冲池负责将物理页面从主内存来回移动到磁盘。它允许 DBMS 的内存大于系统可用内存量的。 项目要求实现三个部分：
+LRU Replacement Policy Buffer Pool Manager Instance Parallel Buffer Pool Manager Task #1 - LRU REPLACEMENT POLICY 实验一要求实现一个LRU替换策略。LRU和buffer pool管理的页数相同，其中LRU管理的是页框号(frame_id)，buffer pool中管理的是页(page_id)。 LRU替换策略需要满足的条件：
+显然 LRU中的元素必须有时序，以区分最近使用的和久未使用的数据，当容量满了之后要删除最久未使用的那个元素腾位置。 要在LRU中快速找到某一页。 在访问LRU中的某个页时，需要将这个页变为最近使用的，所以LRU要支持任意位置的插入和删除。 实验主要要求实现四个函数：
+Victim(frame_id_t *)：从LRU中删除一个最近最久没有使用的页，并将其frame_id传入参数。 Pin(frame_id_t)：当有其他线程要使用这个frame时，需要使用Pin这个动作将这个frame从LRU管理的frame中删除，防止frame在使用过程中被置换出去。 Unpin(frame_id_t) ：当这个frame不在被线程使用了，所以我们将这个frame加入LRU中。表示这个frame此时可以被置换出去。 Size() ：返回LRU中页面的数目。 具体实现： 几个成员：
+list&amp;lt;frame_id_t&amp;gt; frame_; // 表示LRU中存放的所有页框号 unordered_map&amp;lt;frame_id_t, std::list&amp;lt;frame_id_t&amp;gt;::iterator&amp;gt; frame_map_; mutex mux_ bool Victim(frame_id_t*) 如果frame_链表为空，则表示LRU中没有可替换的页框，直接返回false 如果frame_链表不为空，则在链表中删除最近最久未使用的（即第一个或者最后一个，具体看设计），同时解除hush映射。 bool LRUReplacer::Victim(frame_id_t *frame_id) { const std::lock_guard&amp;lt;std::mutex&amp;gt; lock_guard(mux_); if (frame_.empty()) { return false; } *frame_id = frame_.front(); frame_.pop_front(); frame_map_.erase(*frame_id); return true; } void Pin(frame_id_t frame_id) 如果在frame_map_中找不到页框，return 如果能找到，则在frame_和frame_map_中删除页框 void LRUReplacer::Pin(frame_id_t frame_id) { std::lock_guard&amp;lt;std::mutex&amp;gt; lock_guard(mux_); if (frame_map_.</description>
+    </item>
+    
+  </channel>
+</rss>

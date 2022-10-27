@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title> // My New Hugo Site</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.104.3" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="John Doe" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://chen-dy.github.io.git/css/main.min.0fb49e70a30412f97ddfc418e18fefef1d9fcdebe45f634dbbba768b00fe1eec.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content=""/>
+<meta name="twitter:description" content="这个项目的目的是实现一个缓存池，缓冲池负责将物理页面从主内存来回移动到磁盘。它允许 DBMS 的内存大于系统可用内存量的。 项目要求实现三个部分：
+LRU Replacement Policy Buffer Pool Manager Instance Parallel Buffer Pool Manager Task #1 - LRU REPLACEMENT POLICY 实验一要求实现一个LRU替换策略。LRU和buffer pool管理的页数相同，其中LRU管理的是页框号(frame_id)，buffer pool中管理的是页(page_id)。 LRU替换策略需要满足的条件：
+显然 LRU中的元素必须有时序，以区分最近使用的和久未使用的数据，当容量满了之后要删除最久未使用的那个元素腾位置。 要在LRU中快速找到某一页。 在访问LRU中的某个页时，需要将这个页变为最近使用的，所以LRU要支持任意位置的插入和删除。 实验主要要求实现四个函数：
+Victim(frame_id_t *)：从LRU中删除一个最近最久没有使用的页，并将其frame_id传入参数。 Pin(frame_id_t)：当有其他线程要使用这个frame时，需要使用Pin这个动作将这个frame从LRU管理的frame中删除，防止frame在使用过程中被置换出去。 Unpin(frame_id_t) ：当这个frame不在被线程使用了，所以我们将这个frame加入LRU中。表示这个frame此时可以被置换出去。 Size() ：返回LRU中页面的数目。 具体实现： 几个成员：
+list&lt;frame_id_t&gt; frame_; // 表示LRU中存放的所有页框号 unordered_map&lt;frame_id_t, std::list&lt;frame_id_t&gt;::iterator&gt; frame_map_; mutex mux_ bool Victim(frame_id_t*) 如果frame_链表为空，则表示LRU中没有可替换的页框，直接返回false 如果frame_链表不为空，则在链表中删除最近最久未使用的（即第一个或者最后一个，具体看设计），同时解除hush映射。 bool LRUReplacer::Victim(frame_id_t *frame_id) { const std::lock_guard&lt;std::mutex&gt; lock_guard(mux_); if (frame_.empty()) { return false; } *frame_id = frame_.front(); frame_.pop_front(); frame_map_.erase(*frame_id); return true; } void Pin(frame_id_t frame_id) 如果在frame_map_中找不到页框，return 如果能找到，则在frame_和frame_map_中删除页框 void LRUReplacer::Pin(frame_id_t frame_id) { std::lock_guard&lt;std::mutex&gt; lock_guard(mux_); if (frame_map_."/>
+
+    <meta property="og:title" content="" />
+<meta property="og:description" content="这个项目的目的是实现一个缓存池，缓冲池负责将物理页面从主内存来回移动到磁盘。它允许 DBMS 的内存大于系统可用内存量的。 项目要求实现三个部分：
+LRU Replacement Policy Buffer Pool Manager Instance Parallel Buffer Pool Manager Task #1 - LRU REPLACEMENT POLICY 实验一要求实现一个LRU替换策略。LRU和buffer pool管理的页数相同，其中LRU管理的是页框号(frame_id)，buffer pool中管理的是页(page_id)。 LRU替换策略需要满足的条件：
+显然 LRU中的元素必须有时序，以区分最近使用的和久未使用的数据，当容量满了之后要删除最久未使用的那个元素腾位置。 要在LRU中快速找到某一页。 在访问LRU中的某个页时，需要将这个页变为最近使用的，所以LRU要支持任意位置的插入和删除。 实验主要要求实现四个函数：
+Victim(frame_id_t *)：从LRU中删除一个最近最久没有使用的页，并将其frame_id传入参数。 Pin(frame_id_t)：当有其他线程要使用这个frame时，需要使用Pin这个动作将这个frame从LRU管理的frame中删除，防止frame在使用过程中被置换出去。 Unpin(frame_id_t) ：当这个frame不在被线程使用了，所以我们将这个frame加入LRU中。表示这个frame此时可以被置换出去。 Size() ：返回LRU中页面的数目。 具体实现： 几个成员：
+list&lt;frame_id_t&gt; frame_; // 表示LRU中存放的所有页框号 unordered_map&lt;frame_id_t, std::list&lt;frame_id_t&gt;::iterator&gt; frame_map_; mutex mux_ bool Victim(frame_id_t*) 如果frame_链表为空，则表示LRU中没有可替换的页框，直接返回false 如果frame_链表不为空，则在链表中删除最近最久未使用的（即第一个或者最后一个，具体看设计），同时解除hush映射。 bool LRUReplacer::Victim(frame_id_t *frame_id) { const std::lock_guard&lt;std::mutex&gt; lock_guard(mux_); if (frame_.empty()) { return false; } *frame_id = frame_.front(); frame_.pop_front(); frame_map_.erase(*frame_id); return true; } void Pin(frame_id_t frame_id) 如果在frame_map_中找不到页框，return 如果能找到，则在frame_和frame_map_中删除页框 void LRUReplacer::Pin(frame_id_t frame_id) { std::lock_guard&lt;std::mutex&gt; lock_guard(mux_); if (frame_map_." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chen-dy.github.io.git/post/1111/" /><meta property="article:section" content="post" />
+
+
+
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://chen-dy.github.io.git/"><img class="app-header-avatar" src="/avatar.jpg" alt="John Doe" /></a>
+      <span class="app-header-title">My New Hugo Site</span>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vehicula turpis sit amet elit pretium.</p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title"></h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jan 1, 0001
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          4 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <p>这个项目的目的是实现一个缓存池，缓冲池负责将物理页面从主内存来回移动到磁盘。它允许 DBMS 的内存大于系统可用内存量的。
+项目要求实现三个部分：</p>
+<ul>
+<li><a href="https://15445.courses.cs.cmu.edu/fall2021/project1/#replacer">LRU Replacement Policy</a></li>
+<li><a href="https://15445.courses.cs.cmu.edu/fall2021/project1/#buffer-pool-instance">Buffer Pool Manager Instance</a></li>
+<li><a href="https://15445.courses.cs.cmu.edu/fall2021/project1/#parallel-buffer-pool">Parallel Buffer Pool Manager</a></li>
+</ul>
+<h1 id="task-1---lru-replacement-policy">Task #1 - LRU REPLACEMENT POLICY</h1>
+<p>实验一要求实现一个LRU替换策略。LRU和buffer pool管理的页数相同，其中LRU管理的是页框号(frame_id)，buffer pool中管理的是页(page_id)。
+<strong>LRU替换策略需要满足的条件：</strong></p>
+<ol>
+<li>显然 LRU中的元素必须有时序，以区分最近使用的和久未使用的数据，当容量满了之后要删除最久未使用的那个元素腾位置。</li>
+<li>要在LRU中快速找到某一页。</li>
+<li>在访问LRU中的某个页时，需要将这个页变为最近使用的，所以LRU要支持任意位置的插入和删除。</li>
+</ol>
+<p><strong>实验主要要求实现四个函数：</strong></p>
+<ul>
+<li>Victim(frame_id_t *)：从LRU中删除一个最近最久没有使用的页，并将其frame_id传入参数。</li>
+<li>Pin(frame_id_t)：当有其他线程要使用这个frame时，需要使用Pin这个动作将这个frame从LRU管理的frame中删除，防止frame在使用过程中被置换出去。</li>
+<li>Unpin(frame_id_t) ：当这个frame不在被线程使用了，所以我们将这个frame加入LRU中。表示这个frame此时可以被置换出去。</li>
+<li>Size() ：返回LRU中页面的数目。</li>
+</ul>
+<h2 id="具体实现">具体实现：</h2>
+<p>几个成员：</p>
+<ul>
+<li>list&lt;frame_id_t&gt; frame_;  // 表示LRU中存放的所有页框号</li>
+<li>unordered_map&lt;frame_id_t, std::list&lt;frame_id_t&gt;::iterator&gt; frame_map_;</li>
+<li>mutex mux_</li>
+</ul>
+<h3 id="bool-victimframe_id_t">bool Victim(frame_id_t*)</h3>
+<ol>
+<li>如果frame_链表为空，则表示LRU中没有可替换的页框，直接返回false</li>
+<li>如果frame_链表不为空，则在链表中删除最近最久未使用的（即第一个或者最后一个，具体看设计），同时解除hush映射。</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> LRUReplacer<span style="color:#f92672">::</span>Victim(frame_id_t <span style="color:#f92672">*</span>frame_id) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(mux_);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (frame_.empty()) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">*</span>frame_id <span style="color:#f92672">=</span> frame_.front();
+</span></span><span style="display:flex;"><span>  frame_.pop_front();
+</span></span><span style="display:flex;"><span>  frame_map_.erase(<span style="color:#f92672">*</span>frame_id);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="void-pinframe_id_t-frame_id">void Pin(frame_id_t frame_id)</h3>
+<ol>
+<li>如果在frame_map_中找不到页框，return</li>
+<li>如果能找到，则在frame_和frame_map_中删除页框</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> LRUReplacer<span style="color:#f92672">::</span>Pin(frame_id_t frame_id) {
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(mux_);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (frame_map_.count(frame_id) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  frame_.erase(frame_map_[frame_id]);
+</span></span><span style="display:flex;"><span>  frame_map_.erase(frame_id);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="void-unpinframe_id_t-frame_id">void Unpin(frame_id_t frame_id)</h3>
+<ol>
+<li>如果在frame_map_中不能找到，return</li>
+<li>如果能找到，则在frame_中和frame_map_中增加页框</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> LRUReplacer<span style="color:#f92672">::</span>Unpin(frame_id_t frame_id) {
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(mux_);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (frame_map_.count(frame_id) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  frame_.push_back(frame_id);
+</span></span><span style="display:flex;"><span>  frame_map_[frame_id] <span style="color:#f92672">=</span> std<span style="color:#f92672">::</span>prev(frame_.end());
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="task-2---buffer-pool-manager-instance">TASK #2 - BUFFER POOL MANAGER INSTANCE</h2>
+<p>这个实验需要实现一个buffer pool管理模块，包括在池子中拿增删查页面等操作。</p>
+<p><img src="https://cdn.nlark.com/yuque/0/2022/png/12697287/1665751365173-e50e9465-0c00-4188-9e68-efd5973a4799.png#clientId=u3d53bb4b-2cb1-4&amp;crop=0&amp;crop=0&amp;crop=1&amp;crop=1&amp;errorMessage=unknown%20error&amp;from=paste&amp;height=540&amp;id=u32973698&amp;margin=%5Bobject%20Object%5D&amp;name=image.png&amp;originHeight=675&amp;originWidth=1201&amp;originalType=binary&amp;ratio=1&amp;rotation=0&amp;showTitle=false&amp;size=119017&amp;status=error&amp;style=none&amp;taskId=uba4a3193-ce9e-4978-8611-3642dc30e41&amp;title=&amp;width=960.8" alt="image.png">
+其中要注意搞懂实验中的几个概念：
+其中BufferPoolManagerInstance成员：</p>
+<ul>
+<li>frame_id_t : LRU中管理的页框id</li>
+<li>page_id : 磁盘具体页号，一定区分frame_id 和 page_id</li>
+<li>replacer_ ：LRU</li>
+<li>list&lt;frame_id_t&gt; free_list_ : 空闲页的页框号</li>
+<li>unordered_map&lt;page_id_t, frame_id_t&gt; page_table_ ：磁盘中的页号和buffer pool中页框号的映射。</li>
+<li>disk_manager_ : 为磁盘管理器，提供从磁盘读入页面及写入页面的接口</li>
+</ul>
+<p>其中Page成员：</p>
+<ul>
+<li>pin_count_ ：表示有几个线程正在使用，pin_count不为0时不能删除</li>
+<li>data_ : Page中的保存的内容，若Page为dirty则对其进行操作时考虑将data_重新写入磁盘</li>
+<li>page_id : 磁盘具体页号，一定区分frame_id 和 page_id</li>
+<li>is_dirty_: 保存该页面自磁盘读入或写回后是否被修改</li>
+</ul>
+<h2 id="具体实现-1">具体实现</h2>
+<h3 id="bool-flushpgimppage_id_t-page_id">bool FlushPgImp(page_id_t page_id)</h3>
+<p>将目标page重新刷回磁盘</p>
+<ol>
+<li>看能否在page_table_中找到</li>
+<li>没找到返回false</li>
+<li>找到刷新</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> BufferPoolManagerInstance<span style="color:#f92672">::</span>FlushPgImp(page_id_t page_id) {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Make sure you call DiskManager::WritePage!
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">auto</span> it <span style="color:#f92672">=</span> page_table_.find(page_id);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 如果在page_table中找不到 或者page_id是INVALID_PAGE_ID 则返回false
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (it <span style="color:#f92672">==</span> page_table_.end() <span style="color:#f92672">||</span> page_id <span style="color:#f92672">==</span> INVALID_PAGE_ID) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 拿到page的frame_id
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  frame_id_t flush_id <span style="color:#f92672">=</span> it<span style="color:#f92672">-&gt;</span>second;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 向磁盘写入数据
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  disk_manager_<span style="color:#f92672">-&gt;</span>WritePage(page_id, pages_[flush_id].data_);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="void-flushallpgsimp">void FlushAllPgsImp()</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> BufferPoolManagerInstance<span style="color:#f92672">::</span>FlushAllPgsImp() {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// You can do it!
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span> <span style="color:#f92672">&amp;</span>it : page_table_) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (it.first <span style="color:#f92672">==</span> INVALID_PAGE_ID) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    frame_id_t flush_id <span style="color:#f92672">=</span> it.second;
+</span></span><span style="display:flex;"><span>    disk_manager_<span style="color:#f92672">-&gt;</span>WritePage(it.first, pages_[flush_id].data_);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="page-newpgimppage_id_t-page_id">Page *NewPgImp(page_id_t *page_id)</h3>
+<p>分配一个新的page</p>
+<ol>
+<li></li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>Page <span style="color:#f92672">*</span>BufferPoolManagerInstance<span style="color:#f92672">::</span>NewPgImp(page_id_t <span style="color:#f92672">*</span>page_id) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 0.   Make sure you call AllocatePage!
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 罗老师说要在后面分配
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 1.   If all the pages in the buffer pool are pinned, return nullptr.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (free_list_.empty() <span style="color:#f92672">&amp;&amp;</span> replacer_<span style="color:#f92672">-&gt;</span>Size() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nullptr</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 2.   Pick a victim page P from either the free list or the replacer. Always
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// pick from the free list first.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  frame_id_t p;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 如果free_list_不为空，则从free_list_中获得一个frame_id，否则就调用Victim()从LRU中获得一个frame_id
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>free_list_.empty()) {
+</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> free_list_.front();
+</span></span><span style="display:flex;"><span>    free_list_.pop_front();
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    replacer_<span style="color:#f92672">-&gt;</span>Victim(<span style="color:#f92672">&amp;</span>p);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 3.   Update P&#39;s metadata, zero out memory and add P to the page table.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  Page <span style="color:#f92672">*</span>victim_page <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages_[p];
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (victim_page<span style="color:#f92672">-&gt;</span>IsDirty()) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 有问题
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    disk_manager_<span style="color:#f92672">-&gt;</span>WritePage(victim_page<span style="color:#f92672">-&gt;</span>GetPageId(), victim_page<span style="color:#f92672">-&gt;</span>data_);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 解除映射
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  page_table_.erase(victim_page<span style="color:#f92672">-&gt;</span>GetPageId());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">*</span>page_id <span style="color:#f92672">=</span> AllocatePage();
+</span></span><span style="display:flex;"><span>  victim_page<span style="color:#f92672">-&gt;</span>page_id_ <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>page_id;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// victim_page-&gt;page_id_ = AllocatePage();
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// *page_id = victim_page-&gt;page_id_;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  victim_page<span style="color:#f92672">-&gt;</span>ResetMemory();
+</span></span><span style="display:flex;"><span>  victim_page<span style="color:#f92672">-&gt;</span>is_dirty_ <span style="color:#f92672">=</span> false;
+</span></span><span style="display:flex;"><span>  victim_page<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 重新建立映射
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  page_table_[victim_page<span style="color:#f92672">-&gt;</span>GetPageId()] <span style="color:#f92672">=</span> p;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 4.   Set the page ID output parameter. Return a pointer to P.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> victim_page;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="page-fetchpgimppage_id_t-page_id">Page *FetchPgImp(page_id_t page_id)</h3>
+<p>这个函数就是我们要拿到一个page。这个函数可以分为三种情况分析</p>
+<ol>
+<li>如果该页在缓冲池中直接访问并且记得把它的pin_count++，然后把调用Pin函数通知replacer</li>
+<li>否则调用find_replace函数，无论缓冲池是否有空闲，都可以获得可用的frame_id</li>
+<li>当然如果替换页为空，择要</li>
+<li>然后建立新的page_table映射关系</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>Page <span style="color:#f92672">*</span>BufferPoolManagerInstance<span style="color:#f92672">::</span>FetchPgImp(page_id_t page_id) {
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>  Page <span style="color:#f92672">*</span>fetch_page <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 1.     Search the page table for the requested page (P).
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 1.1    If P exists, pin it and return it immediately.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (page_table_.count(page_id) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    frame_id_t frame_id <span style="color:#f92672">=</span> page_table_[page_id];
+</span></span><span style="display:flex;"><span>    fetch_page <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages_[frame_id];
+</span></span><span style="display:flex;"><span>    fetch_page<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    replacer_<span style="color:#f92672">-&gt;</span>Pin(page_table_[page_id]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> fetch_page;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 1.2    If P does not exist, find a replacement page (R) from either the
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// free list or the replacer.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">//        Note that pages are always found from the free list first.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (free_list_.empty() <span style="color:#f92672">&amp;&amp;</span> replacer_<span style="color:#f92672">-&gt;</span>Size() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nullptr</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  frame_id_t frame_id <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 如果free_list_不为空，则从free_list_中获得一个frame_id，否则就调用Victim()从LRU中获得一个frame_id
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>free_list_.empty()) {
+</span></span><span style="display:flex;"><span>    frame_id <span style="color:#f92672">=</span> free_list_.front();
+</span></span><span style="display:flex;"><span>    free_list_.pop_front();
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    replacer_<span style="color:#f92672">-&gt;</span>Victim(<span style="color:#f92672">&amp;</span>frame_id);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  fetch_page <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages_[frame_id];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 2.     If R is dirty, write it back to the disk.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (fetch_page<span style="color:#f92672">-&gt;</span>is_dirty_) {
+</span></span><span style="display:flex;"><span>    disk_manager_<span style="color:#f92672">-&gt;</span>WritePage(fetch_page<span style="color:#f92672">-&gt;</span>GetPageId(), fetch_page<span style="color:#f92672">-&gt;</span>data_);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 3.     Delete R from the page table and insert P.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  page_table_.erase(fetch_page<span style="color:#f92672">-&gt;</span>GetPageId());
+</span></span><span style="display:flex;"><span>  page_table_[page_id] <span style="color:#f92672">=</span> frame_id;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 4.     Update P&#39;s metadata, read in the page content from disk, and then
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// return a pointer to P.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  disk_manager_<span style="color:#f92672">-&gt;</span>ReadPage(page_id, fetch_page<span style="color:#f92672">-&gt;</span>data_);
+</span></span><span style="display:flex;"><span>  fetch_page<span style="color:#f92672">-&gt;</span>page_id_ <span style="color:#f92672">=</span> page_id;
+</span></span><span style="display:flex;"><span>  fetch_page<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  fetch_page<span style="color:#f92672">-&gt;</span>is_dirty_ <span style="color:#f92672">=</span> false;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> fetch_page;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="bool-deletepgimppage_id_t-page_id">bool DeletePgImp(page_id_t page_id)</h3>
+<p>这里是要我们把缓冲池中的page移出</p>
+<ol>
+<li>如果这个page根本就不在缓冲池则直接返回</li>
+<li>如果这个page 的引用计数大于0(pin_counter&gt;0)表示我们不能返回</li>
+<li>如果这个page被修改过则要写回磁盘</li>
+<li>否则正常移除就好了。（在hash表中erase）</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> BufferPoolManagerInstance<span style="color:#f92672">::</span>DeletePgImp(page_id_t page_id) {
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 0.   Make sure you call DeallocatePage! 没有DeallocatePage?
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 1.   Search the page table for the requested page (P).
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">auto</span> iter <span style="color:#f92672">=</span> page_table_.find(page_id);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 1.   If P does not exist, return true.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (page_table_.count(page_id) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 2.   If P exists, but has a non-zero pin-count, return false. Someone is
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// using the page.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  Page <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages_[iter<span style="color:#f92672">-&gt;</span>second];
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// pages_[page_table_[page_id]].pin_count_
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 3.   Otherwise, P can be deleted. Remove P from the page table, reset its
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// metadata and return it to the free list.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>IsDirty()) {
+</span></span><span style="display:flex;"><span>    disk_manager_<span style="color:#f92672">-&gt;</span>WritePage(p<span style="color:#f92672">-&gt;</span>GetPageId(), p<span style="color:#f92672">-&gt;</span>GetData());
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>ResetMemory();
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>is_dirty_ <span style="color:#f92672">=</span> false;
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>page_id_ <span style="color:#f92672">=</span> INVALID_PAGE_ID;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  free_list_.push_back(page_table_[page_id]);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 注意这里要确保只在replacer,free_list的其中一个里面出现
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  replacer_<span style="color:#f92672">-&gt;</span>Pin(iter<span style="color:#f92672">-&gt;</span>second);
+</span></span><span style="display:flex;"><span>  page_table_.erase(page_id);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="bool-unpinpgimppage_id_t-page_id-bool-is_dirty">bool UnpinPgImp(page_id_t page_id, bool is_dirty)</h3>
+<p>这个函数就是如果我们这个进程已经完成了对这个页的操作。我们需要unpin操作</p>
+<ol>
+<li>如果这个页的pin_couter&gt;0我们直接&ndash;</li>
+<li>如果这个页的pin _couter==0我们需要给它加到Lru_replacer中。因为没有人引用它。所以它可以成为被替换的候选人</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> BufferPoolManagerInstance<span style="color:#f92672">::</span>UnpinPgImp(page_id_t page_id, <span style="color:#66d9ef">bool</span> is_dirty) {
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>lock_guard<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>mutex<span style="color:#f92672">&gt;</span> lock_guard(latch_);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">auto</span> it <span style="color:#f92672">=</span> page_table_.find(page_id);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (it <span style="color:#f92672">==</span> page_table_.end()) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  Page <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages_[it<span style="color:#f92672">-&gt;</span>second];
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>is_dirty_ <span style="color:#f92672">=</span> is_dirty <span style="color:#f92672">||</span> p<span style="color:#f92672">-&gt;</span>IsDirty();
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">-=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>pin_count_ <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    replacer_<span style="color:#f92672">-&gt;</span>Unpin(it<span style="color:#f92672">-&gt;</span>second);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
